@@ -1,7 +1,7 @@
 # Crolang Broker
 
 ## Table of contents
-- [The Crolang Bridge Project](#the-crolang-bridge-project)
+- [The CrolangP2P Project](#the-crolangp2p-project)
   - [Goals](#goals)
   - [How](#how)
   - [Benefits](#benefits)
@@ -24,11 +24,16 @@
   - [Variable Validation](#variable-validation)
 - [License](#license)
 
-## The Crolang Bridge Project
+## The CrolangP2P Project
 
 ### Goals
-The Crolang Bridge Project aims to provide a stable, robust, and exceptionally simple framework for establishing 
-peer-to-peer (P2P) connections between clients, known as Crolang Nodes, to facilitate seamless data exchange. 
+The CrolangP2P Project aims to provide a stable, robust, and exceptionally simple framework for establishing 
+cross-language peer-to-peer (P2P) connections between clients facilitating seamless data exchange. 
+
+The clients are known as Crolang Nodes and are implemented in various programming languages, but the logic is
+agnostic to the language used, meaning that a client does not care about the language of the other client. Nodes just 
+create a P2P connection referencing the ID of the other Node they want to connect to and start exchanging messages.
+
 The project's core focus is on simplicity, offering a framework that minimizes the need for additional 
 expertise and streamlines the P2P connection process. With a minimal setup time of just a few minutes, 
 developers can concentrate on what truly matters: implementing their desired P2P logic.
@@ -48,7 +53,7 @@ approach minimizes complexity and allows for rapid development.
 programming languages, seamless P2P connections can be established between clients regardless of their 
 underlying language. This cross-language compatibility fosters a versatile and interconnected ecosystem.
 - __Arbitrary Packet Size Transmission__: WebRTC imposes a maximum limit on the size of data packets exchanged. 
-Crolang Bridge overcomes this limitation by introducing additional mechanisms to handle larger data payloads. 
+CrolangP2P overcomes this limitation by introducing additional mechanisms to handle larger data payloads. 
 This allows developers to transmit packets of any size, providing greater flexibility and enabling the transfer 
 of substantial data volumes.
 
