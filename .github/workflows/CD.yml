@@ -26,8 +26,8 @@ jobs:
       - name: Build and push Docker image for 3 platforms
         run: |
           docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --tag crolang-p2p/broker:latest \
-            --tag crolang-p2p/broker:${{ env.RELEASE_VERSION }} \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/broker:latest \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/broker:${{ env.RELEASE_VERSION }} \
             --push .
 
       # Optionally, clean up and logout
