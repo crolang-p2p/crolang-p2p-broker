@@ -1,0 +1,41 @@
+{
+  "name": "crolang-broker",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node ./dist/main.js",
+    "dev": "npm run add:license && npx nodemon ./src/main.ts",
+    "analyze": "npm run add:license && npx eslint ./src",
+    "fix": "npm run add:license && npx eslint ./src --fix",
+    "add:license": "node scripts/add-license.js"
+  },
+  "keywords": [],
+  "author": "Alessandro Talmi alessandro.talmi@gmail.com",
+  "license": "MIT",
+  "description": "The Broker in the CrolangP2P project, used to establish a connection between Crolang nodes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crolang-p2p/crolang-p2p-broker"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.6.0",
+    "@types/async-lock": "^1.4.2",
+    "@types/axios": "^0.14.4",
+    "globals": "^15.8.0",
+    "nodemon": "^3.1.4",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^7.16.0"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "async-lock": "^1.4.1",
+    "axios": "^1.7.9",
+    "date-and-time": "^3.4.0",
+    "dotenv": "^16.4.7",
+    "ioredis": "^5.5.0",
+    "redis": "^4.6.15",
+    "socket.io": "^4.7.5"
+  }
+}
