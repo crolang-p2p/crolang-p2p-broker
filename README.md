@@ -17,7 +17,7 @@
   - [Horizontal scalability](#horizontal-scalability)
   - [Nodes RTC configuration](#nodes-rtc-configuration)
   - [Nodes authentication](#nodes-authentication)
-  - [Nodes connection authorization](#nodes-connection-authorization)
+  - [Nodes connection and communication via WebSocket authorization](#nodes-connection-and-communication-via-websocket-authorization)
   - [Nodes validity through lifecycle](#nodes-validity-through-lifecycle)
   - [On authenticated socket message](#on-authenticated-socket-message)
 - [Environment variables](#environment-variables)
@@ -340,7 +340,7 @@ Let's say, for example, that you want to authenticate a Node based on a token. W
 ```
 This structure will be redirected to the authentication endpoint, which will use it to enforce the custom authentication logic.
 
-### Nodes connection authorization
+### Nodes connection and communication via WebSocket authorization
 
 Environment variable: `AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL`
 
@@ -349,6 +349,8 @@ negotiate the connection. The Broker allows this message exchange for all connec
 
 However, if the `AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL` environment variable is provided, the Broker will call the specified 
 endpoint whenever two Nodes attempt to exchange messages, determining whether the P2P connection between them is permitted.
+
+**This authorization mechanism is also used to determine if two Nodes are allowed to exchange messages via WebSocket through the Broker (i.e., using the Broker as a relay instead of a direct P2P connection).**
 
 #### Request
 **Method:** `POST`
