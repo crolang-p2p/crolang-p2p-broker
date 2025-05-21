@@ -12,12 +12,14 @@
   - [Expanding Broker capabilities](#expanding-broker-capabilities)
 - [Connecting a Crolang Node to the Broker](#connecting-a-crolang-node-to-the-broker)
 - [Overcoming network limitations for Node's P2P connections](#overcoming-network-limitations-for-nodes-p2p-connections)
+- [Message exchange via WebSocket](#message-exchange-via-websocket)
 - [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modules)
   - [Horizontal scalability](#horizontal-scalability)
   - [Nodes RTC configuration](#nodes-rtc-configuration)
   - [Nodes authentication](#nodes-authentication)
   - [Nodes connection authorization](#nodes-connection-authorization)
   - [Nodes validity through lifecycle](#nodes-validity-through-lifecycle)
+  - [On authenticated socket message](#on-authenticated-socket-message)
 - [Environment variables](#environment-variables)
   - [.env file](#env-file)
   - [Supported Environment Variables](#supported-environment-variables)
@@ -38,6 +40,8 @@ The project's core focus is on simplicity, offering a framework that minimizes t
 expertise and streamlines the P2P connection process. With a minimal setup time of just a few minutes, 
 developers can concentrate on what truly matters: implementing their desired P2P logic.
 
+Additionally, if a direct P2P connection is not possible or not desired, the Broker also allows nodes to exchange messages via WebSocket, using the Broker as a relay.
+
 ### How
 To initiate connections, Crolang Nodes rely on a well-known intermediary: the Crolang Broker. This scalable 
 architecture, composed of one or more Broker instances, operates transparently to the nodes. Once a P2P 
@@ -56,6 +60,7 @@ underlying language. This cross-language compatibility fosters a versatile and i
 CrolangP2P overcomes this limitation by introducing additional mechanisms to handle larger data payloads. 
 This allows developers to transmit packets of any size, providing greater flexibility and enabling the transfer 
 of substantial data volumes.
+- __Customizable via extensions__: The Broker can be easily extended with custom business logic through a modular extension system. This allows you to adapt authentication, authorization, message handling, and more to your specific needs.
 
 ## What does the Broker do
 The Crolang Broker is a scalable socket server that forms the backbone of the Crolang project. Nodes authenticate 
@@ -171,6 +176,12 @@ servers online.
 The Broker by default provides a reference to the [Google's free STUN servers](https://dev.to/alakkadshaw/google-stun-server-list-21n4).
 If your use case requires that Nodes are able to connect in more restrictive network conditions, you can provide your TURN server; 
 see the [Nodes RTC configuration](#nodes-rtc-configuration) section for more info about it.
+
+## Message exchange via WebSocket
+
+In addition to facilitating the negotiation and establishment of peer-to-peer (P2P) connections between nodes using WebRTC, the project also allows for traditional message exchange between peers via WebSocket, using the Broker as a relay.
+
+This feature enables nodes to send messages to each other even without establishing a P2P connection. The broker receives the message from the sender and delivers it to the recipient, making it easy to implement classic client-server communication logic or to provide a fallback in case a direct connection cannot be established.
 
 ## Customizing Broker behaviours: Modules
 The Broker server offers modular customization, enabling users to extend or modify its functionality without altering the core codebase. 
@@ -406,6 +417,30 @@ JSON object with the following structure:
 This mechanism ensures that only valid Nodes remain connected to the Broker, allowing for automatic enforcement of business 
 rules regarding Node connections.
 
+### On authenticated socket message
+
+Environment variable: `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL`
+
+This extension allows you to execute custom logic every time an authenticated message is exchanged between two nodes through the broker (for example, when using the WebSocket relay as an alternative to P2P). The extension is triggered every time a node attempts to send a message to another node via WebSocket, after the optional "Nodes connection authorization" extension has been evaluated and authorization has been granted.
+
+If the `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL` environment variable is set, the broker will call the specified webhook endpoint with the following payload each time a message is relayed:
+
+```json
+{
+  "senderId": "string",
+  "receiverId": "string",
+  "isReceiverConnected": true
+}
+```
+| Field                | Type      | Description                                             | Required |
+|----------------------|-----------|---------------------------------------------------------|----------|
+| `senderId`           | `string`  | The unique ID of the node sending the message           | Yes      |
+| `receiverId`         | `string`  | The unique ID of the node receiving the message         | Yes      |
+| `isReceiverConnected`| `boolean` | Whether the receiver node is currently connected        | Yes      |
+
+The webhook is called asynchronously and its response is ignored. If the environment variable is not set, the extension does nothing by default.
+
+This mechanism allows you to implement auditing, logging, or custom business logic for every authenticated message exchanged via the broker.
 ## Environment variables
 Variable management is centralized in the `EnvVar` class, which ensures validation and provides default values when necessary.
 
@@ -425,6 +460,7 @@ NODES_AUTHENTICATION_WEBHOOK_URL=https://example.com/auth
 AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL=https://example.com/authorize
 NODES_VALIDITY_CHECK_WEBHOOK_URL=https://example.com/validity
 RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL=https://example.com/rtc
+ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL=https://example.com/socket-auth
 ```
 
 ### Supported Environment Variables
@@ -441,6 +477,7 @@ See [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modu
 | `AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL`   | Webhook for authorizing communication between nodes                      | `undefined` |
 | `NODES_VALIDITY_CHECK_WEBHOOK_URL`            | Webhook for periodically verifying the validity of connected nodes       | `undefined` |
 | `RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL`      | Webhook for retrieving RTC configuration for connected nodes             | `undefined` |
+| `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL`     | Webhook for processing authenticated socket messages                     | `undefined` |
 
 
 ### Variable Validation
@@ -453,5 +490,3 @@ URLs are checked to ensure they are valid.
 
 ## License
 This project is licensed under the Apache-2.0 License - see the [LICENSE](./LICENSE.md) file for details.
-
-

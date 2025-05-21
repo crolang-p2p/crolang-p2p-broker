@@ -75,6 +75,11 @@ export default class EnvVar {
    */
   readonly REDIS_LOCK_TTL_MS: number;
 
+  /**
+   * The URL of the webhook used for handling authenticated socket messages between nodes.
+   */
+  readonly ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL: string | undefined;
+
   constructor() {
     dotenv.config();
     this.PORT = getOptionalEnvIntGtZero("PORT", 8080);
@@ -86,12 +91,14 @@ export default class EnvVar {
     this.AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL = getOptionalEnvString("AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL", undefined);
     this.NODES_VALIDITY_CHECK_WEBHOOK_URL = getOptionalEnvString("NODES_VALIDITY_CHECK_WEBHOOK_URL", undefined);
     this.RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL = getOptionalEnvString("RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL", undefined);
+    this.ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL = getOptionalEnvString("ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL", undefined);
 
     validateUrl(this.REDIS_URL);
     validateUrl(this.NODES_AUTHENTICATION_WEBHOOK_URL);
     validateUrl(this.AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL);
     validateUrl(this.NODES_VALIDITY_CHECK_WEBHOOK_URL);
     validateUrl(this.RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL);
+    validateUrl(this.ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL);
   }
 
 }

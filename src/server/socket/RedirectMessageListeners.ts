@@ -23,7 +23,8 @@ import {
   CONNECTION_REFUSAL,
   ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER,
   ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR,
-  INCOMING_CONNECTIONS_NOT_ALLOWED
+  INCOMING_CONNECTIONS_NOT_ALLOWED,
+  SOCKET_MSG_EXCHANGE
 } from "../domain/Messages";
 import { ExtensionsContainerSingleton } from "../extensions/ExtensionsContainerSingleton";
 import {
@@ -59,6 +60,15 @@ export function applyNodeSocketMsgListeners(socket: Socket, nodeId: string): voi
   applyRedirectToReceiverListener(extension, socket, nodeId, INCOMING_CONNECTIONS_NOT_ALLOWED);
   applyRedirectToReceiverListener(extension, socket, nodeId, ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER);
   applyRedirectToReceiverListener(extension, socket, nodeId, ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR);
+  applyRedirectToReceiverListener(
+    extension,
+    socket,
+    nodeId,
+    SOCKET_MSG_EXCHANGE,
+    (senderId, receiverId, isReceiverConnected) => {
+      ExtensionsContainerSingleton.instance.onAuthenticatedSocketMsg.handle(senderId, receiverId, isReceiverConnected);
+    }
+  );
 }
 
 /**
@@ -97,20 +107,32 @@ function applyAreNodesConnectedToBrokerListener(socket: Socket, message: string)
  * @param message - The message type to listen for.
  */
 function applyRedirectToReceiverListener(
-  extension: NodesCommunicationAuthorizationExtension, socket: Socket, nodeId: string, message: string
+  extension: NodesCommunicationAuthorizationExtension,
+  socket: Socket,
+  nodeId: string,
+  message: string,
+  onAuthenticatedMsgStrategy?: (senderId: string, receiverId: string, isReceiverConnected: boolean) => void
 ): void {
   socket.on(
     message,
     async (payload, callback) => {
-      try{
-        if(payload !== undefined && payload !== null) {
+      try {
+        if (payload !== undefined && payload !== null) {
           const to: string = getStringOrThrow(payload, TO);
           const authorized: boolean = await extension.authorize(nodeId, to);
-          if(!authorized) {
+          if (!authorized) {
             return callback(CALLBACK_UNAUTHORIZED);
           }
           const socketId: string | undefined = await LockManagerSingleton.instance.getSocketId(to);
-          if(socketId === undefined) {
+          const isReceiverConnected = socketId !== undefined;
+          if (onAuthenticatedMsgStrategy) {
+            try {
+              await onAuthenticatedMsgStrategy(nodeId, to, isReceiverConnected);
+            } catch (err) {
+              return callback(CALLBACK_ERROR);
+            }
+          }
+          if (!isReceiverConnected) {
             return callback(CALLBACK_NOT_CONNECTED);
           }
           callback(CALLBACK_OK);
@@ -118,8 +140,8 @@ function applyRedirectToReceiverListener(
         } else {
           return callback(CALLBACK_ERROR);
         }
-      } catch(e) {
-        if(typeof callback === FUNCTION_TYPE) {
+      } catch (e) {
+        if (typeof callback === FUNCTION_TYPE) {
           return callback(CALLBACK_ERROR);
         }
       }

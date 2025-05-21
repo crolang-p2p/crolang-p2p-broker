@@ -37,6 +37,8 @@ import {
   RTCConfigurationResolverExtension
 } from "../extensions/interfaces/RTCConfigurationResolverExtension";
 import { RTCConfigurationResolverWebhookExtension } from "../webhooks/RTCConfigurationResolverWebhookExtension";
+import { DefaultOnAuthenticatedSocketMsgExtension, OnAuthenticatedSocketMsgExtension } from "../extensions/interfaces/OnAuthenticatedSocketMsgExtension";
+import { OnAuthenticatedSocketMsgWebhookExtension } from "../webhooks/OnAuthenticatedSocketMsgWebhookExtension";
 import { ExtensionsContainerSingleton } from "../extensions/ExtensionsContainerSingleton";
 
 export function setupExtensionsContainer(envVar: EnvVar): void {
@@ -75,6 +77,22 @@ export function setupExtensionsContainer(envVar: EnvVar): void {
     rtcConfiguration = new RTCConfigurationResolverWebhookExtension(envVar.RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL);
   }
 
-  ExtensionsContainerSingleton.init(authentication, commAuth, validityCheck, rtcConfiguration);
+  let onAuthenticatedSocketMsg: OnAuthenticatedSocketMsgExtension = new DefaultOnAuthenticatedSocketMsgExtension();
+  if(envVar.ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL === undefined) {
+    console.log("Using default on authenticated socket msg extension");
+  } else {
+    console.log("Using webhook on authenticated socket msg extension");
+    onAuthenticatedSocketMsg = new OnAuthenticatedSocketMsgWebhookExtension(
+      envVar.ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL
+    );
+  }
+
+  ExtensionsContainerSingleton.init(
+    authentication,
+    commAuth,
+    validityCheck,
+    rtcConfiguration,
+    onAuthenticatedSocketMsg
+  );
 
 }

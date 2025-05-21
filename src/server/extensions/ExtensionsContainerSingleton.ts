@@ -18,6 +18,7 @@ import { NodesAuthenticationExtension } from "./interfaces/NodesAuthenticationEx
 import { NodesCommunicationAuthorizationExtension } from "./interfaces/NodesCommunicationAuthorizationExtension";
 import { NodesValidityCheckExtension } from "./interfaces/NodesValidityCheckExtension";
 import { RTCConfigurationResolverExtension } from "./interfaces/RTCConfigurationResolverExtension";
+import { OnAuthenticatedSocketMsgExtension } from "./interfaces/OnAuthenticatedSocketMsgExtension";
 
 export class ExtensionsContainerSingleton {
 
@@ -27,27 +28,31 @@ export class ExtensionsContainerSingleton {
   readonly communicationAuthorization: NodesCommunicationAuthorizationExtension;
   readonly validityCheck: NodesValidityCheckExtension;
   readonly rtcConfiguration: RTCConfigurationResolverExtension;
+  readonly onAuthenticatedSocketMsg: OnAuthenticatedSocketMsgExtension;
 
   private constructor(
     authentication: NodesAuthenticationExtension,
     communicationAuthorization: NodesCommunicationAuthorizationExtension,
     validityCheck: NodesValidityCheckExtension,
-    rtcConfiguration: RTCConfigurationResolverExtension
+    rtcConfiguration: RTCConfigurationResolverExtension,
+    onAuthenticatedSocketMsg: OnAuthenticatedSocketMsgExtension
   ) {
     this.authentication = authentication;
     this.communicationAuthorization = communicationAuthorization;
     this.validityCheck = validityCheck;
     this.rtcConfiguration = rtcConfiguration;
+    this.onAuthenticatedSocketMsg = onAuthenticatedSocketMsg;
   }
 
   static init(
     authentication: NodesAuthenticationExtension,
     communicationAuthorization: NodesCommunicationAuthorizationExtension,
     validityCheck: NodesValidityCheckExtension,
-    rtcConfiguration: RTCConfigurationResolverExtension
+    rtcConfiguration: RTCConfigurationResolverExtension,
+    onAuthenticatedSocketMsg: OnAuthenticatedSocketMsgExtension
   ): void {
     ExtensionsContainerSingleton.instance = new ExtensionsContainerSingleton(
-      authentication, communicationAuthorization, validityCheck, rtcConfiguration
+      authentication, communicationAuthorization, validityCheck, rtcConfiguration, onAuthenticatedSocketMsg
     );
   }
 
