@@ -31,8 +31,10 @@ import {
 } from "../extensions/interfaces/NodesCommunicationAuthorizationExtension";
 import { LockManagerSingleton } from "../utils/LockManagerSingleton";
 
-const CALLBACK_ACK: boolean = true;
-const CALLBACK_ERROR: boolean = false;
+const CALLBACK_OK: string = "OK";
+const CALLBACK_ERROR: string = "ERROR";
+const CALLBACK_UNAUTHORIZED: string = "UNAUTHORIZED";
+const CALLBACK_NOT_CONNECTED: string = "NOT_CONNECTED";
 
 const TO: string = "to";
 const IDS: string = "ids";
@@ -103,15 +105,15 @@ function applyRedirectToReceiverListener(
       try{
         if(payload !== undefined && payload !== null) {
           const to: string = getStringOrThrow(payload, TO);
-          const socketId: string | undefined = await LockManagerSingleton.instance.getSocketId(to);
-          if(socketId === undefined) {
-            return callback(CALLBACK_ERROR);
-          }
           const authorized: boolean = await extension.authorize(nodeId, to);
           if(!authorized) {
-            return callback(CALLBACK_ERROR);
+            return callback(CALLBACK_UNAUTHORIZED);
           }
-          callback(CALLBACK_ACK);
+          const socketId: string | undefined = await LockManagerSingleton.instance.getSocketId(to);
+          if(socketId === undefined) {
+            return callback(CALLBACK_NOT_CONNECTED);
+          }
+          callback(CALLBACK_OK);
           socket.to(socketId).emit(message, payload);
         } else {
           return callback(CALLBACK_ERROR);
