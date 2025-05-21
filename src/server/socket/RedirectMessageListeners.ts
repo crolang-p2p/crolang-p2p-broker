@@ -24,6 +24,7 @@ import {
   ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER,
   ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR,
   INCOMING_CONNECTIONS_NOT_ALLOWED,
+  needsAuthorization,
   SOCKET_MSG_EXCHANGE
 } from "../domain/Messages";
 import { ExtensionsContainerSingleton } from "../extensions/ExtensionsContainerSingleton";
@@ -119,9 +120,11 @@ function applyRedirectToReceiverListener(
       try {
         if (payload !== undefined && payload !== null) {
           const to: string = getStringOrThrow(payload, TO);
-          const authorized: boolean = await extension.authorize(nodeId, to);
-          if (!authorized) {
-            return callback(CALLBACK_UNAUTHORIZED);
+          if(needsAuthorization(message)) {
+            const authorized: boolean = await extension.authorize(nodeId, to);
+            if (!authorized) {
+              return callback(CALLBACK_UNAUTHORIZED);
+            }
           }
           const socketId: string | undefined = await LockManagerSingleton.instance.getSocketId(to);
           const isReceiverConnected = socketId !== undefined;

@@ -25,3 +25,13 @@ export const INCOMING_CONNECTIONS_NOT_ALLOWED: string = "INCOMING_CONNECTIONS_NO
 export const ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER: string = "ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER";
 export const ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR: string = "ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR";
 export const SOCKET_MSG_EXCHANGE: string = "SOCKET_MSG_EXCHANGE";
+
+/**
+ * Determines if a message type requires authorization by the Broker.
+ *
+ * @param msgType - The type of the message to check.
+ * @returns True if the message type requires authorization (CONNECTION_ATTEMPT or SOCKET_MSG_EXCHANGE), false otherwise.
+ */
+export function needsAuthorization(msgType: string): boolean {
+  return msgType === CONNECTION_ATTEMPT || msgType === SOCKET_MSG_EXCHANGE;
+}
