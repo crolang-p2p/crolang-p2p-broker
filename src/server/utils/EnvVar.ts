@@ -80,6 +80,18 @@ export default class EnvVar {
    */
   readonly ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL: string | undefined;
 
+  /**
+   * Whether P2P connections between nodes are enabled.
+   * If false, only direct peer-to-peer connections are disabled. Defaults to true if not set.
+   */
+  readonly P2P_CONNECTION_ENABLED: boolean;
+
+  /**
+   * Whether relaying messages between nodes via WebSocket is enabled.
+   * If false, only message relay through the broker is disabled. Defaults to true if not set.
+   */
+  readonly WEBSOCKET_RELAY_ENABLED: boolean;
+
   constructor() {
     dotenv.config();
     this.PORT = getOptionalEnvIntGtZero("PORT", 8080);
@@ -92,6 +104,8 @@ export default class EnvVar {
     this.NODES_VALIDITY_CHECK_WEBHOOK_URL = getOptionalEnvString("NODES_VALIDITY_CHECK_WEBHOOK_URL", undefined);
     this.RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL = getOptionalEnvString("RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL", undefined);
     this.ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL = getOptionalEnvString("ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL", undefined);
+    this.P2P_CONNECTION_ENABLED = getOptionalBoolean("P2P_CONNECTION_ENABLED", true);
+    this.WEBSOCKET_RELAY_ENABLED = getOptionalBoolean("WEBSOCKET_RELAY_ENABLED", true);
 
     validateUrl(this.REDIS_URL);
     validateUrl(this.NODES_AUTHENTICATION_WEBHOOK_URL);
@@ -189,4 +203,32 @@ export function getOptionalEnvIntGtZero(name: string, defaultValue: number): num
     return defaultValue;
   }
   throw Error("Default value must be greater than zero");
+}
+
+/**
+ * Retrieves an optional environment variable as a boolean.
+ * Returns a default value if the environment variable is not set.
+ * Accepts only 'true' or 'false' (case-insensitive) as valid values.
+ * Throws an error if the environment variable is set but not exactly 'true' or 'false'.
+ *
+ * @param name - The name of the environment variable.
+ * @param defaultValue - The default value to return if the environment variable is not set.
+ * @returns The value of the environment variable as a boolean, or the default value.
+ * @throws Error if the environment variable is set but not 'true' or 'false'.
+ */
+export function getOptionalBoolean(name: string, defaultValue: boolean): boolean {
+  const v: string | undefined = process.env[name];
+  if (v === undefined || v === null) {
+    return defaultValue;
+  }
+  const normalized = v.trim().toLowerCase();
+  if (normalized === "true") {
+    return true;
+  }
+  if (normalized === "false") {
+    return false;
+  }
+  throw Error(
+    `Environment variable ${name} must be either 'true' or 'false', if provided`
+  );
 }

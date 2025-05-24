@@ -136,7 +136,12 @@ export default async function setupSocketServer(envVar: EnvVar): Promise<SocketS
         }
       }
 
-      applyNodeSocketMsgListeners(socket, onConnectionData.id);
+      applyNodeSocketMsgListeners(
+        socket,
+        onConnectionData.id,
+        envVar.P2P_CONNECTION_ENABLED,
+        envVar.WEBSOCKET_RELAY_ENABLED
+      );
 
       if(logLevel > 0) {
         log("Event: " + CONNECTION_EVENT + " for node " + socket.data.additionalData.idNode);

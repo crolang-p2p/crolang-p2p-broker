@@ -32,11 +32,13 @@ import {
   NodesCommunicationAuthorizationExtension
 } from "../extensions/interfaces/NodesCommunicationAuthorizationExtension";
 import { LockManagerSingleton } from "../utils/LockManagerSingleton";
-
-const CALLBACK_OK: string = "OK";
-const CALLBACK_ERROR: string = "ERROR";
-const CALLBACK_UNAUTHORIZED: string = "UNAUTHORIZED";
-const CALLBACK_NOT_CONNECTED: string = "NOT_CONNECTED";
+import {
+  CALLBACK_OK,
+  CALLBACK_ERROR,
+  CALLBACK_UNAUTHORIZED,
+  CALLBACK_NOT_CONNECTED,
+  CALLBACK_DISABLED
+} from "../domain/SocketResponseCallbacks";
 
 const TO: string = "to";
 const IDS: string = "ids";
@@ -50,22 +52,40 @@ const FUNCTION_TYPE: string = "function";
  * @param socket - The Socket.IO socket instance to attach listeners to.
  * @param nodeId - The ID of the node associated with the socket.
  */
-export function applyNodeSocketMsgListeners(socket: Socket, nodeId: string): void {
+export function applyNodeSocketMsgListeners(
+  socket: Socket,
+  nodeId: string,
+  isP2PConnectionEnabled: boolean,
+  isWebSocketRelayEnabled: boolean
+): void {
   const extension: NodesCommunicationAuthorizationExtension = ExtensionsContainerSingleton
     .instance
     .communicationAuthorization;
   applyAreNodesConnectedToBrokerListener(socket, ARE_NODES_CONNECTED_TO_BROKER);
-  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_ATTEMPT);
-  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_ACCEPTANCE);
-  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_REFUSAL);
-  applyRedirectToReceiverListener(extension, socket, nodeId, INCOMING_CONNECTIONS_NOT_ALLOWED);
-  applyRedirectToReceiverListener(extension, socket, nodeId, ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER);
-  applyRedirectToReceiverListener(extension, socket, nodeId, ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR);
+  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_ATTEMPT, isP2PConnectionEnabled);
+  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_ACCEPTANCE, isP2PConnectionEnabled);
+  applyRedirectToReceiverListener(extension, socket, nodeId, CONNECTION_REFUSAL, isP2PConnectionEnabled);
+  applyRedirectToReceiverListener(extension, socket, nodeId, INCOMING_CONNECTIONS_NOT_ALLOWED, isP2PConnectionEnabled);
+  applyRedirectToReceiverListener(
+    extension,
+    socket,
+    nodeId,
+    ICE_CANDIDATES_EXCHANGE_INITIATOR_TO_RESPONDER,
+    isP2PConnectionEnabled
+  );
+  applyRedirectToReceiverListener(
+    extension,
+    socket,
+    nodeId,
+    ICE_CANDIDATES_EXCHANGE_RESPONDER_TO_INITIATOR,
+    isP2PConnectionEnabled
+  );
   applyRedirectToReceiverListener(
     extension,
     socket,
     nodeId,
     SOCKET_MSG_EXCHANGE,
+    isWebSocketRelayEnabled,
     (senderId, receiverId, isReceiverConnected) => {
       ExtensionsContainerSingleton.instance.onAuthenticatedSocketMsg.handle(senderId, receiverId, isReceiverConnected);
     }
@@ -112,11 +132,15 @@ function applyRedirectToReceiverListener(
   socket: Socket,
   nodeId: string,
   message: string,
+  isEnabled: boolean = true,
   onAuthenticatedMsgStrategy?: (senderId: string, receiverId: string, isReceiverConnected: boolean) => void
 ): void {
   socket.on(
     message,
     async (payload, callback) => {
+      if (!isEnabled) {
+        return callback(CALLBACK_DISABLED);
+      }
       try {
         if (payload !== undefined && payload !== null) {
           const to: string = getStringOrThrow(payload, TO);
