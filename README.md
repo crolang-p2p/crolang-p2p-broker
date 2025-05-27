@@ -480,6 +480,8 @@ See [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modu
 | `NODES_VALIDITY_CHECK_WEBHOOK_URL`            | Webhook for periodically verifying the validity of connected nodes       | `undefined` |
 | `RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL`      | Webhook for retrieving RTC configuration for connected nodes             | `undefined` |
 | `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL`     | Webhook for processing authenticated socket messages                     | `undefined` |
+| `P2P_CONNECTION_ENABLED`                      | Enables or disables direct P2P connections between nodes. Accepts only `true` or `false`. | `true` |
+| `WEBSOCKET_RELAY_ENABLED`                     | Enables or disables relaying messages between nodes via WebSocket. Accepts only `true` or `false`. | `true` |
 
 
 ### Variable Validation
