@@ -29,7 +29,6 @@ The official implementation of the Broker in the Crolang project.
 - [Environment variables](#environment-variables)
   - [.env file](#env-file)
   - [Supported Environment Variables](#supported-environment-variables)
-  - [Variable Validation](#variable-validation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -56,7 +55,7 @@ allowing Nodes to discover each other and negotiate the parameters for a direct,
 You can run the Crolang Broker either with Docker or directly from source code. By default, the Broker listens on port 8080. To change the port or other settings, see the [Environment variables](#environment-variables) section.
 
 ### With Docker
-- **Official image:**
+- **[Official image](https://hub.docker.com/r/crolangp2p/broker):**
   ```sh
   docker run -p 8080:8080 crolangp2p/broker
   ```
@@ -379,14 +378,6 @@ See [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modu
 | `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL`     | Webhook for processing authenticated socket messages                     | `undefined` |
 | `P2P_CONNECTION_ENABLED`                      | Enables or disables direct P2P connections between nodes. Accepts only `true` or `false`. | `true` |
 | `WEBSOCKET_RELAY_ENABLED`                     | Enables or disables relaying messages between nodes via WebSocket. Accepts only `true` or `false`. | `true` |
-
-### Variable Validation
-During startup, the application validates environment variables:
-
-URLs are checked to ensure they are valid.
-- Numeric values must fall within the expected range.
-- If a variable is not defined, the default value is used.
-- If a variable is misconfigured, the application will throw an error and terminate to prevent unexpected behavior.
 
 ## Contributing
 Contributions, bug reports, and feature requests are welcome! Please open an issue or pull request on GitHub.
