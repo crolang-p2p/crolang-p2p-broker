@@ -1,18 +1,24 @@
-# Crolang Broker
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)
+
+![GitHub last commit](https://img.shields.io/github/last-commit/crolang-p2p/crolang-p2p-broker)
+![Docker Image Version](https://img.shields.io/docker/v/crolangp2p/broker?logo=docker)
+![GitHub Release Date](https://img.shields.io/github/release-date/crolang-p2p/crolang-p2p-broker)
+
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9C%93-brightgreen)
+
+# crolang-p2p-broker
+The official implementation of the Broker in the Crolang project.
 
 ## Table of contents
 - [The CrolangP2P Project](#the-crolangp2p-project)
-  - [Goals](#goals)
-  - [How](#how)
-  - [Benefits](#benefits)
 - [What does the Broker do](#what-does-the-broker-do)
 - [Run the Broker](#run-the-broker)
-  - [Run from source code](#run-from-source-code)
-  - [Docker](#docker)
-  - [Expanding Broker capabilities](#expanding-broker-capabilities)
+  - [With Docker](#with-docker)
+  - [From source code](#from-source-code)
 - [Connecting a Crolang Node to the Broker](#connecting-a-crolang-node-to-the-broker)
-- [Overcoming network limitations for Node's P2P connections](#overcoming-network-limitations-for-nodes-p2p-connections)
 - [Message exchange via WebSocket](#message-exchange-via-websocket)
+- [Overcoming network limitations for Node's P2P connections](#overcoming-network-limitations-for-nodes-p2p-connections)
 - [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modules)
   - [Horizontal scalability](#horizontal-scalability)
   - [Nodes RTC configuration](#nodes-rtc-configuration)
@@ -24,43 +30,18 @@
   - [.env file](#env-file)
   - [Supported Environment Variables](#supported-environment-variables)
   - [Variable Validation](#variable-validation)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## The CrolangP2P Project
+[CrolangP2P](https://github.com/crolang-p2p) is a simple, robust framework for cross-language peer-to-peer (P2P) connections. Clients (“Crolang Nodes”) libraries can be easily integrated into your project and connect using only the ID of the target node, exchanging messages directly via P2P or via WebSocket using the [Crolang Broker](https://github.com/crolang-p2p/crolang-p2p-broker) as relay. The framework manages the connection and you can focus on what matters most: your project's logic.
 
-### Goals
-The CrolangP2P Project aims to provide a stable, robust, and exceptionally simple framework for establishing 
-cross-language peer-to-peer (P2P) connections between clients facilitating seamless data exchange. 
+- **Simplicity:** Minimal setup—just import the Node library, specify the peer ID, and connect.
+- **Cross-language:** [Multiple Node implementations](#available-crolangp2p-node-implementations) allow seamless P2P between different languages.
+- **No packet size limits:** Large data exchange is supported.
+- **Extensible:** The Broker supports modular extensions for authentication, authorization, message handling, and more.
 
-The clients are known as Crolang Nodes and are implemented in various programming languages, but the logic is
-agnostic to the language used, meaning that a client does not care about the language of the other client. Nodes just 
-create a P2P connection referencing the ID of the other Node they want to connect to and start exchanging messages.
-
-The project's core focus is on simplicity, offering a framework that minimizes the need for additional 
-expertise and streamlines the P2P connection process. With a minimal setup time of just a few minutes, 
-developers can concentrate on what truly matters: implementing their desired P2P logic.
-
-Additionally, if a direct P2P connection is not possible or not desired, the Broker also allows nodes to exchange messages via WebSocket, using the Broker as a relay.
-
-### How
-To initiate connections, Crolang Nodes rely on a well-known intermediary: the Crolang Broker. This scalable 
-architecture, composed of one or more Broker instances, operates transparently to the nodes. Once a P2P 
-connection is established between two peers, data is exchanged directly among said peers, bypassing the Broker.
-
-The P2P connection is possible by using the WebRTC technology.
-
-### Benefits
-- __Simple__: Minimal setup is required. Developers simply import the Crolang Node dependency into their client, 
-specify the ID of the node they wish to connect to, and the connection process is initiated. This streamlined 
-approach minimizes complexity and allows for rapid development.
-- __Cross-language Transparency__: With multiple implementations of the Crolang Node library available in various 
-programming languages, seamless P2P connections can be established between clients regardless of their 
-underlying language. This cross-language compatibility fosters a versatile and interconnected ecosystem.
-- __Arbitrary Packet Size Transmission__: WebRTC imposes a maximum limit on the size of data packets exchanged. 
-CrolangP2P overcomes this limitation by introducing additional mechanisms to handle larger data payloads. 
-This allows developers to transmit packets of any size, providing greater flexibility and enabling the transfer 
-of substantial data volumes.
-- __Customizable via extensions__: The Broker can be easily extended with custom business logic through a modular extension system. This allows you to adapt authentication, authorization, message handling, and more to your specific needs.
+Nodes connect through the [Crolang Broker](https://github.com/crolang-p2p/crolang-p2p-broker), which acts as a rendezvous point: it helps nodes discover each other and establish direct WebRTC connections.
 
 ## What does the Broker do
 The Crolang Broker is a scalable socket server that forms the backbone of the Crolang project. Nodes authenticate 
@@ -72,110 +53,42 @@ information to establish a P2P connection. Essentially, the Broker acts as an in
 allowing Nodes to discover each other and negotiate the parameters for a direct, peer-to-peer connection.
 
 ## Run the Broker
-There are several strategies for running the Crolang Broker, including executing the source code directly or 
-using Docker images.
+You can run the Crolang Broker either with Docker or directly from source code. By default, the Broker listens on port 8080. To change the port or other settings, see the [Environment variables](#environment-variables) section.
 
-### Run from source code
-The Crolang Broker project is based on Node.js and written in TypeScript. To run the project from source, 
-first you need to install the dependencies by running the following command:
-```bash
-npm install
-```
-Once the dependencies are installed, you can start the Broker in dev mode by running:
-```bash
-npm run dev
-```
-Running the Broker in dev mode provides a convenient way to test the application locally, restarting the 
-server each time a file is modified. 
+### With Docker
+- **Official image:**
+  ```sh
+  docker run -p 8080:8080 crolangp2p/broker
+  ```
+- **Custom build:**
+  ```sh
+  docker build -t crolang-broker .
+  docker run -p 8080:8080 crolang-broker
+  ```
+- **Custom port:**
+  ```sh
+  docker run -p 8081:8081 -e PORT=8081 crolangp2p/broker
+  ```
 
-To run the Broker in production mode, first use the following command to build the project:
-```bash
-npm run build
-```
-Then, start the Broker by running:
-```bash
-npm run start
-```
-
-Both the dev and production modes will start the Broker on port 8080 by default. If you need to run the Broker 
-on a different port, you can provide the PORT environment variable in a .env file or directly in your machine.
-
-See the [Environment variables](#environment-variables) section for more information on available environment variables.
-
-### Docker
-You can run the Crolang Broker using Docker in two ways: by building your own Docker image or by using the official project image.
-
-To create your own Docker image, first build the project using the following command:
-```bash
-docker build -t crolang-broker .
-```
-This will create a Docker image named `crolang-broker` using the Dockerfile in the project directory.
-
-To run the Docker container, execute:
-```bash
-docker run -p 8080:8080 crolang-broker
-```
-
-If you prefer to use the official Docker image, you can run it by simply executing:
-```bash
-docker run -p 8080:8080 alessandrotalmi/broker-service
-```
-
-Both methods will start the Broker in a Docker container, mapping port 8080 on the host to port 8080 in the container.  
-If you need to execute the Broker with a different port, you can change the port mapping accordingly and provide the PORT environment variable:
-```bash
-docker run -p 8081:8081 -e PORT=8081 crolang-broker
-```
-or
-```bash
-docker run -p 8081:8081 -e PORT=8081 alessandrotalmi/broker-service
-```
-
-See the [Environment variables](#environment-variables) section for more information on available environment variables.
-
-### Expanding Broker capabilities
-Through the use of environment variables, you can customize the Broker's behavior and capabilities, especially when it comes to horizontal scalability, Nodes connectivity and custom business logic.
-
-See the following sections for more information on how to customize the Broker's behavior:
-- [Overcoming network limitations for Node's P2P connections](#overcoming-network-limitations-for-nodes-p2p-connections)
-- [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modules)
-- [Environment variables](#environment-variables)
+### From Source Code
+1. Install dependencies:
+   ```sh
+   npm install
+   ```
+2. **Development mode (auto-reload):**
+   ```sh
+   npm run dev
+   ```
+3. **Production mode:**
+   ```sh
+   npm run build
+   npm start
+   ```
 
 ## Connecting a Crolang Node to the Broker
-TODO
+There are several different implementations in various programming languages of Crolang Nodes; check the following [list](https://github.com/crolang-p2p#available-crolangp2p-node-implementations) to see all the available implementations.
 
-## Overcoming network limitations for Node's P2P connections
-Without providing additional setup to the Broker, the connection among Nodes is not guaranteed due to network limitations.
-
-Being based on WebRTC, Crolang Nodes need to exchange ICE candidates in order to establish a connection.
-ICE (Interactive Connectivity Establishment) is a framework that allows WebRTC peers to discover possible network paths
-they can use to communicate.
-Each ICE candidate represents a potential connection method, including direct peer-to-peer connections, connections
-through NAT traversal, or relayed connections if necessary.
-
-STUN (Session Traversal Utilities for NAT) servers help WebRTC peers determine their public IP address and the type of
-NAT they are behind.
-This is crucial because, in many cases, devices are connected to the internet via a private IP (e.g., inside a home or
-office network), and they need to know their external IP to establish a direct connection with another peer.
-STUN servers facilitate this by responding with the public IP and port from which the request was received, allowing the
-client to use this information when exchanging ICE candidates.
-
-While STUN works well when both peers are behind NATs that allow direct connections, some network configurations make
-peer-to-peer connections impossible. This can happen in cases where:
-
-- One or both peers are behind symmetric NATs, which assign a different external port for each destination.
-- Strict firewall rules block direct UDP traffic between peers.
-
-In such scenarios, TURN (Traversal Using Relays around NAT) servers act as a relay between the two peers.
-Instead of establishing a direct connection, both peers send their data to the TURN server, which then forwards it to
-the other peer. This ensures connectivity even in the most restrictive network conditions, but it comes at a cost:
-TURN increases latency and requires additional bandwidth on the relay server.
-Since the TURN server is a relay, it has its cost based on traffic redirection, that's why you will only find free STUN
-servers online.
-
-The Broker by default provides a reference to the [Google's free STUN servers](https://dev.to/alakkadshaw/google-stun-server-list-21n4).
-If your use case requires that Nodes are able to connect in more restrictive network conditions, you can provide your TURN server; 
-see the [Nodes RTC configuration](#nodes-rtc-configuration) section for more info about it.
+Furthermore, to get documentation on how actually to use said Nodes, check the [list of examples](https://github.com/crolang-p2p#usage-examples) using the various Crolang Node implementations.
 
 ## Message exchange via WebSocket
 
@@ -183,21 +96,24 @@ In addition to facilitating the negotiation and establishment of peer-to-peer (P
 
 This feature enables nodes to send messages to each other even without establishing a P2P connection. The broker receives the message from the sender and delivers it to the recipient, making it easy to implement classic client-server communication logic or to provide a fallback in case a direct connection cannot be established.
 
+## Overcoming network limitations for Node's P2P connections
+Crolang Nodes use [WebRTC](https://webrtc.org/) to establish P2P connections, which requires exchanging [ICE candidates](https://webrtc.org/getting-started/peer-connections?hl=en#ice_candidates) to discover viable network paths. In most cases, [STUN servers](https://www.metered.ca/tools/openrelay/stun-servers-and-friends/#what-is-a-stun-server) are sufficient to help nodes determine their public IP and traverse NATs, enabling direct connections.
+
+However, in restrictive network environments (e.g., symmetric NATs or strict firewalls), direct P2P connections may fail. In these cases, a [TURN server](https://webrtc.org/getting-started/turn-server) is needed to relay traffic between peers, ensuring connectivity at the cost of increased latency and bandwidth usage.
+
+- By default, the Broker provides Google's free STUN servers for basic NAT traversal.
+- If your use case requires robust connectivity in restrictive networks, you can configure your own TURN server. See the [Nodes RTC configuration](#nodes-rtc-configuration) section for details on customizing STUN/TURN settings.
+
 ## Customizing Broker behaviours: Modules
-The Broker server offers modular customization, enabling users to extend or modify its functionality without altering the core codebase. 
-This allows for seamless integration of various business logic and use cases while preserving system integrity.
+The Broker supports modular extensions, allowing you to add or change features (e.g., authentication, logging, event handling) without modifying the core codebase. Modules are loaded at runtime and can be enabled, disabled, or replaced as needed.
 
-Modules are independent components loaded at runtime, each providing specific functionality. They allow for dynamic addition, removal, 
-or replacement of behaviour, such as custom authentication, logging, and event handling, without modifying the core server.
+**Benefits:**
+- Keep business logic separate from the core for easier maintenance
+- Add new features or integrations without touching the main server code
+- Enable/disable modules based on your requirements
+- Isolate customizations to avoid impacting system stability
 
-Benefits: 
-- Decoupled Logic: Keeps business logic separate from the core, reducing maintenance.
-- Extensibility: New features can be added without changing the server code.
-- Configurability: Modules can be enabled/disabled based on requirements.
-- Isolation: Customizations don’t affect the core system’s stability.
-Example Implementation
-
-An example repository showing module integration is available at this repository: [broker_complete_example](https://github.com/crolang/broker_complete_example)
+For a complete example of module integration, see the [broker_complete_example](https://github.com/crolang/broker_complete_example) repository.
 
 As far as infrastructure is concerned, when the Broker is executed without any additional module, it can be seen as shown in the following image:
 ![Standalone architecture](./doc/broker_standalone_example.png)
@@ -208,28 +124,12 @@ While, on the other hand, the Broker uses all the modules, it can be seen as som
 ### Horizontal scalability
 Environment variable: `REDIS_URL`
 
-The Broker service ensures that only one Node with a specific ID is connected to the Broker at any given time. Furthermore, the Broker(s) 
-are responsible for propagating messages between connected Nodes during the connection negotiation process.
+To scale the Broker horizontally (multiple instances for load balancing or high availability), set the `REDIS_URL` environment variable to connect to a Redis service. Redis is used to synchronize the state of connected Node IDs and propagate messages between all Broker instances, ensuring seamless communication regardless of which instance a Node connects to.
 
-Running a single instance of the Broker is straightforward, as it can locally track the IDs of connected nodes and use Socket.IO events 
-to propagate messages between senders and receivers.
-
-However, scaling the Broker horizontally introduces challenges. For example, consider two Broker instances, A and B, and two Nodes, 
-X and Y. If Node X connects to Broker A and Node Y connects to Broker B (due to load balancing or proxy routing), communication 
-becomes problematic. Broker A is unaware of Node Y, and Broker B is unaware of Node X. Consequently, if Node X attempts to connect 
-to Node Y, Broker A cannot propagate the signaling message to Broker B, and vice versa. Additionally, if another Node attempts to 
-authenticate using Node X's ID and is routed to Broker B, Broker B cannot determine that Node X is already connected to Broker A. 
-Ensuring unique Node IDs is crucial for maintaining accurate communication and preventing conflicts.
-
-To address these challenges, the REDIS_URL environment variable can be used to specify the URL of a Redis service. By leveraging 
-Redis, Broker instances can share information about connected Node IDs and reliably propagate messages across all Broker instances. 
-This ensures consistent state and seamless communication, regardless of which Broker instance a Node connects to.
-
-If the REDIS_URL environment variable is not provided, the Broker will operate in standalone mode, assuming no other Broker replicas 
-are present. In this mode, it will use an in-memory approach to manage Node connections and message propagation.
+- **With REDIS_URL:** All Broker replicas share state and messages via Redis (recommended for production/cluster setups).
+- **Without REDIS_URL:** The Broker runs in standalone mode, using only in-memory state (suitable for local development or single-instance deployments).
 
 ### Nodes RTC configuration
-
 Environment variable: `RTC_CONFIGURATION_RESOLVER_WEBHOOK_URL`
 
 See the [Overcoming network limitations for Node's P2P connections](#overcoming-network-limitations-for-nodes-p2p-connections) section 
@@ -293,7 +193,7 @@ JSON object with the following structure:
 - through your custom endpoint.
 
 ### Nodes authentication
-Environment variable: __NODES_AUTHENTICATION_WEBHOOK_URL__
+Environment variable: `NODES_AUTHENTICATION_WEBHOOK_URL`
 
 The Broker service ensures that only one Node with a specific ID is connected to the Broker at any given time by default
 and this behaviour cannot be changed and will always be enforced, independently of the status of the
@@ -341,7 +241,6 @@ Let's say, for example, that you want to authenticate a Node based on a token. W
 This structure will be redirected to the authentication endpoint, which will use it to enforce the custom authentication logic.
 
 ### Nodes connection and communication via WebSocket authorization
-
 Environment variable: `AUTHORIZE_NODES_COMMUNICATION_WEBHOOK_URL`
 
 By default, when two Nodes connected to a Broker attempt to establish a P2P connection, they exchange messages through the Broker to 
@@ -382,7 +281,6 @@ JSON object with the following structure:
 This structure ensures that any communication between two Nodes is subject to explicit authorization before proceeding.
 
 ### Nodes validity through lifecycle
-
 Environment variable: `NODES_VALIDITY_CHECK_WEBHOOK_URL`
 
 By default, the Broker considers all connected Nodes as valid. However, in certain cases, business logic may require a Node
@@ -420,7 +318,6 @@ This mechanism ensures that only valid Nodes remain connected to the Broker, all
 rules regarding Node connections.
 
 ### On authenticated socket message
-
 Environment variable: `ON_AUTHENTICATED_SOCKET_MSG_WEBHOOK_URL`
 
 This extension allows you to execute custom logic every time an authenticated message is exchanged between two nodes through the broker (for example, when using the WebSocket relay as an alternative to P2P). The extension is triggered every time a node attempts to send a message to another node via WebSocket, after the optional "Nodes connection authorization" extension has been evaluated and authorization has been granted.
@@ -483,7 +380,6 @@ See [Customizing Broker behaviours: Modules](#customizing-broker-behaviours-modu
 | `P2P_CONNECTION_ENABLED`                      | Enables or disables direct P2P connections between nodes. Accepts only `true` or `false`. | `true` |
 | `WEBSOCKET_RELAY_ENABLED`                     | Enables or disables relaying messages between nodes via WebSocket. Accepts only `true` or `false`. | `true` |
 
-
 ### Variable Validation
 During startup, the application validates environment variables:
 
@@ -491,6 +387,9 @@ URLs are checked to ensure they are valid.
 - Numeric values must fall within the expected range.
 - If a variable is not defined, the default value is used.
 - If a variable is misconfigured, the application will throw an error and terminate to prevent unexpected behavior.
+
+## Contributing
+Contributions, bug reports, and feature requests are welcome! Please open an issue or pull request on GitHub.
 
 ## License
 This project is licensed under the Apache-2.0 License - see the [LICENSE](./LICENSE.md) file for details.
