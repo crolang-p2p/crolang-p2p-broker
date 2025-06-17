@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "Alessandro Talmi alessandro.talmi@gmail.com",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "description": "The Broker in the CrolangP2P project, used to establish a connection between Crolang nodes",
   "repository": {
     "type": "git",
