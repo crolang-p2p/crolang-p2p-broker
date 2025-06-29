@@ -112,7 +112,7 @@ The Broker supports modular extensions, allowing you to add or change features (
 - Enable/disable modules based on your requirements
 - Isolate customizations to avoid impacting system stability
 
-For a complete example of module integration, see the [broker_complete_example](https://github.com/crolang/broker_complete_example) repository.
+For a complete example of module integration, see the [broker_complete_example](https://github.com/crolang-p2p/examples-crolang-p2p-broker) repository.
 
 As far as infrastructure is concerned, when the Broker is executed without any additional module, it can be seen as shown in the following image:
 ![Standalone architecture](./doc/broker_standalone_example.png)
