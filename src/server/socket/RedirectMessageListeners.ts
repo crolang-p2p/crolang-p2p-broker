@@ -110,7 +110,7 @@ function applyAreNodesConnectedToBrokerListener(socket: Socket, message: string)
             const socketId: string | undefined = await lockManager.getSocketId(id);
             res.push({ id, connected: socketId !== undefined });
           }
-          callback({ results: res });
+          callback(JSON.stringify({ results: res }));
           return;
         }
       }
