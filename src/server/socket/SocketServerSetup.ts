@@ -31,6 +31,7 @@ import { LockManagerSingleton } from "../utils/LockManagerSingleton";
 
 const GENERIC_SOCKET_CONNECTION_ERROR: string = "Socket connection refused: ";
 const AUTH_CLIENT_ALREADY_CONNECTED: string = GENERIC_SOCKET_CONNECTION_ERROR + "a client with the provided id is already connected";
+const CLIENT_ARCHITECTURE_NOT_SUPPORTED: string = GENERIC_SOCKET_CONNECTION_ERROR + "client architecture not supported";
 const CLIENT_AUTH_WEBHOOK_FAILED: string = GENERIC_SOCKET_CONNECTION_ERROR + "authentication failed";
 const RTC_CONFIGURATION_WEBHOOK_FAILED: string = GENERIC_SOCKET_CONNECTION_ERROR + "error retrieving RTC configuration";
 
@@ -80,7 +81,10 @@ export default async function setupSocketServer(envVar: EnvVar): Promise<SocketS
     try{
       const onConnectionData: OnConnectionData = OnConnectionData.createFromPayload(socket.handshake.query);
 
-      // currently onConnectionData's version and runtime are not used, but maybe they can be used in the future
+      if(!isClientSupported(onConnectionData)) {
+        log(CLIENT_ARCHITECTURE_NOT_SUPPORTED);
+        return next(new Error("unsupported architecture"));
+      }
 
       const authorized: boolean = await ExtensionsContainerSingleton.instance.authentication.authenticate(
         onConnectionData
@@ -194,6 +198,12 @@ function registerSingleSocketDisconnectionEvent(event: string, socket: Socket, l
       }
     });
   }
+}
+
+function isClientSupported(onConnectionData: OnConnectionData): boolean {
+  // Here you can implement any logic to check if the client is supported
+  // For now, we assume all clients are supported
+  return true;
 }
 
 function logExchangedMessage(type: string, msg: string, payload: unknown): void {
